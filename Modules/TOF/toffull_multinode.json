@@ -57,7 +57,7 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "tof-little"
+          "name": "raw-little"
         },
         "taskParameters": {
           "nothing": "rien"
@@ -74,7 +74,7 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "tof-many"
+          "name": "digi-many"
         },
         "taskParameters": {
           "nothing": "rien"
