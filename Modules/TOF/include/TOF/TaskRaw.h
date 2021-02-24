@@ -49,25 +49,22 @@ class RawDataDecoder final : public DecoderBase
   ~RawDataDecoder() = default;
 
   /// Function to run decoding of raw data
-  void decode();
+  void decode() { DecoderBase::run(); };
 
   /// Counters to fill
-  static constexpr unsigned int ncrates = 72;    /// Number of crates
-  static constexpr unsigned int ntrms = 10;      /// Number of TRMs per crate
-  static constexpr unsigned int ntrmschains = 2; /// Number of TRMChains per TRM
-  static constexpr unsigned int nsectors = 18;   /// Number of sectors
-  static constexpr unsigned int nstrips = 91;    /// Number of strips per sector
-  static constexpr unsigned int nwords = 32;     /// Number of diagnostic words of a slot card
-  static constexpr unsigned int nslots = 12;     /// Number of slots in a crate
-
-  /// Initialize noise analysis variables
-  Int_t mTimeMin = 0, mTimeMax = -1;
-  Double_t max_noise = 1.e+3 /* [Hz] */, tdc_width = 24.3660e-12 /* [s] */;
+  static constexpr unsigned int ncrates = 72;         /// Number of crates
+  static constexpr unsigned int ntrms = 10;           /// Number of TRMs per crate
+  static constexpr unsigned int ntrmschains = 2;      /// Number of TRMChains per TRM
+  static constexpr unsigned int nsectors = 18;        /// Number of sectors
+  static constexpr unsigned int nstrips = 91;         /// Number of strips per sector
+  static constexpr unsigned int nwords = 32;          /// Number of diagnostic words of a slot card
+  static constexpr unsigned int nslots = 12;          /// Number of slots in a crate
+  static constexpr unsigned int nequipments = 172800; /// Number of equipment in the electronic indexing scheme
 
   /// Set parameters for noise analysis
-  void setTimeMin(std::string min) { mTimeMin = atoi(min.c_str()); }
-  void setTimeMax(std::string max) { mTimeMax = atoi(max.c_str()); }
-  void setMaxNoise(std::string thresholdnoise) { max_noise = atoi(thresholdnoise.c_str()); }
+  void setTimeWindowMin(std::string min) { mTimeMin = atoi(min.c_str()); }
+  void setTimeWindowMax(std::string max) { mTimeMax = atoi(max.c_str()); }
+  void setNoiseThreshold(std::string thresholdnoise) { mNoiseThreshold = atof(thresholdnoise.c_str()); }
 
   // Names of diagnostic counters
   static const char* RDHDiagnosticsName[2];     /// RDH Counter names
@@ -80,16 +77,11 @@ class RawDataDecoder final : public DecoderBase
   Counter<nwords, LTMDiagnosticName> mLTMCounter[ncrates];        /// LTM Counters
   Counter<nwords, TRMDiagnosticName> mTRMCounter[ncrates][ntrms]; /// TRM Counters
   // Global counters
-  Counter<172800, nullptr> mCounterIndexEquipment;          /// Counter for the single electronic index
-  Counter<172800, nullptr> mCounterIndexEquipmentInTimeWin; /// Counter for the single electronic index for noise analysis
-  Counter<172800, nullptr> mCounterNoisyChannels;           /// Counter for noisy channels
-  Counter<1024, nullptr> mCounterTimeBC;                    /// Counter for the Bunch Crossing Time
-  Counter<91, nullptr> mCounterNoiseMap[ncrates][4];        /// Counter for the Noise Hit Map
-
-  /// Histograms to fill
-  std::map<std::string, std::shared_ptr<TH1>> mHistos;
-
-  Int_t rdhread = 0; /// Number of times a RDH is read
+  Counter<nequipments, nullptr> mCounterIndexEquipment;          /// Counter for the single electronic index
+  Counter<nequipments, nullptr> mCounterIndexEquipmentInTimeWin; /// Counter for the single electronic index for noise analysis
+  Counter<nequipments, nullptr> mCounterNoisyChannels;           /// Counter for noisy channels
+  Counter<1024, nullptr> mCounterTimeBC;                         /// Counter for the Bunch Crossing Time
+  Counter<91, nullptr> mCounterNoiseMap[ncrates][4];             /// Counter for the Noise Hit Map
 
   /// Function to init histograms
   void initHistograms();
@@ -124,6 +116,13 @@ class RawDataDecoder final : public DecoderBase
   void trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
                       const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
                       const Error_t* errors) override;
+
+  // Decoder parameters
+  /// Noise analysis variables
+  int mTimeMin = 0;                                /// Start of the time window in bins of the TDC
+  int mTimeMax = -1;                               /// End of the time window in bins of the TDC
+  static constexpr double mTDCWidth = 24.3660e-12; /// Width of the TDC bins in [s]
+  double mNoiseThreshold = 1.e+3;                  /// Threshold used to defined noise in [Hz]
 };
 
 /// \brief TOF Quality Control DPL Task for TOF Compressed data

@@ -44,9 +44,12 @@ class Counter
   ~Counter() = default;
 
   /// Functions to increment a counter
-  /// @param v Index in the counter array to increment, @param weight weight to add to the array element
-  void Add(const unsigned int& v, const unsigned int& weight);
+  /// @param v Index in the counter array to increment
+  /// @param weight weight to add to the array element
+  void Add(const unsigned int& v, const uint32_t& weight);
 
+  /// Functions to count a single event
+  /// @param v Index in the counter array to increment
   void Count(const unsigned int& v);
 
   /// Function to reset counters to zero
@@ -97,7 +100,7 @@ class Counter
 // #define ENABLE_PRINT_HISTOGRAMS_MODE // Flag used to enable more printing and more debug
 
 template <const unsigned int size, const char* labels[size]>
-void Counter<size, labels>::Add(const unsigned int& v, const unsigned int& weight)
+void Counter<size, labels>::Add(const unsigned int& v, const uint32_t& weight)
 {
   if (v > size) {
     LOG(FATAL) << "Incrementing counter too far! " << v << "/" << size;
